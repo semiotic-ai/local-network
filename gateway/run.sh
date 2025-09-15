@@ -7,9 +7,9 @@ graph_tally_verifier=$(jq -r '."1337".GraphTallyCollector.address' /opt/horizon.
 dispute_manager=$(jq -r '."1337".DisputeManager.address' /opt/subgraph-service.json)
 subgraph_service=$(jq -r '."1337".SubgraphService.address' /opt/subgraph-service.json)
 network_subgraph_deployment=$(curl -s "http://graph-node:${GRAPH_NODE_GRAPHQL}/subgraphs/name/graph-network" \
-  -H 'content-type: application/json' \
-  -d '{"query": "{ _meta { deployment } }" }' \
-  | jq -r '.data._meta.deployment')
+    -H 'content-type: application/json' \
+    -d '{"query": "{ _meta { deployment } }" }' |
+    jq -r '.data._meta.deployment')
 cat >config.json <<-EOF
 {
   "attestations": {
@@ -44,6 +44,7 @@ cat >config.json <<-EOF
   "query_fees_target": 40e-6,
   "receipts": {
     "chain_id": "1337",
+    "payer": "${ACCOUNT1_ADDRESS}",
     "signer": "${ACCOUNT0_SECRET}",
     "verifier": "${graph_tally_verifier}"
   },

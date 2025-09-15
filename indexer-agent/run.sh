@@ -5,20 +5,20 @@ set -eu
 token_address=$(jq -r '."1337".L2GraphToken.address' /opt/horizon.json)
 staking_address=$(jq -r '."1337".HorizonStaking.address' /opt/horizon.json)
 indexer_staked="$(cast call "--rpc-url=http://chain:${CHAIN_RPC}" \
-  "${staking_address}" 'hasStake(address) (bool)' "${RECEIVER_ADDRESS}")"
+    "${staking_address}" 'hasStake(address) (bool)' "${RECEIVER_ADDRESS}")"
 echo "indexer_staked=${indexer_staked}"
 if [ "${indexer_staked}" = "false" ]; then
-  # transfer ETH to receiver
-  cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--mnemonic=${MNEMONIC}" \
-    --value=1ether "${RECEIVER_ADDRESS}"
-  # transfer 100,000 GRT to receiver
-  cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--mnemonic=${MNEMONIC}" \
-    "${token_address}" 'transfer(address,uint256)' "${RECEIVER_ADDRESS}" '100000000000000000000000'
-  # stake required GRT for indexer registration
-  cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--private-key=${RECEIVER_SECRET}" \
-    "${token_address}" 'approve(address,uint256)' "${staking_address}" '100000000000000000000000'
-  cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--private-key=${RECEIVER_SECRET}" \
-    "${staking_address}" 'stake(uint256)' '100000000000000000000000'
+    # transfer ETH to receiver
+    cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--mnemonic=${MNEMONIC}" \
+        --value=1ether "${RECEIVER_ADDRESS}"
+    # transfer 100,000 GRT to receiver
+    cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--mnemonic=${MNEMONIC}" \
+        "${token_address}" 'transfer(address,uint256)' "${RECEIVER_ADDRESS}" '100000000000000000000000'
+    # stake required GRT for indexer registration
+    cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--private-key=${RECEIVER_SECRET}" \
+        "${token_address}" 'approve(address,uint256)' "${staking_address}" '100000000000000000000000'
+    cast send "--rpc-url=http://chain:${CHAIN_RPC}" --confirmations=0 "--private-key=${RECEIVER_SECRET}" \
+        "${staking_address}" 'stake(uint256)' '100000000000000000000000'
 fi
 
 cd /opt/indexer/packages/indexer-agent
