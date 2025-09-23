@@ -1,0 +1,22 @@
+services:
+  indexer-service:
+    build:
+      target: wrapper
+      context: ./indexer-service
+      dockerfile: Dockerfile
+    entrypoint: bash -cl /opt/run-override.sh
+    working_dir: /workspace/indexer-rs
+    volumes:
+      - ./overrides/indexer-service-dev/run-override.sh:/opt/run-override.sh:ro
+      - ${INDEXER_SERVICE_SOURCE_ROOT}:/workspace/indexer-rs:cached
+      # Mount host-built binary to avoid compiling inside the image
+      - ${INDEXER_SERVICE_SOURCE_ROOT}/target/release/indexer-service-rs:/usr/local/bin/indexer-service-rs:ro
+      - ./.env:/opt/.env:ro
+      - ./horizon.json:/opt/horizon.json:ro
+      - ./subgraph-service.json:/opt/subgraph-service.json:ro
+      - ./tap-contracts.json:/opt/tap-contracts.json:ro
+    environment:
+      - PROFILER=${PROFILER:-none}
+      - WORKSPACE_DIR=/workspace/indexer-rs
+      - RUST_LOG=${RUST_LOG:-debug}
+      - RUST_BACKTRACE=1
