@@ -1,0 +1,26 @@
+services:
+  tap-agent:
+    build:
+      target: wrapper
+      context: ./tap-agent
+      dockerfile: Dockerfile
+    entrypoint: bash -cl /opt/run-override.sh
+    working_dir: /workspace/indexer-rs
+    volumes:
+      - ./overrides/tap-agent-dev/run-override.sh:/opt/run-override.sh:ro
+      - ${TAP_AGENT_SOURCE_ROOT}:/workspace/indexer-rs:cached
+      # Mount host-built binary to avoid compiling inside the image
+      - ${TAP_AGENT_SOURCE_ROOT}/target/release/indexer-tap-agent:/usr/local/bin/indexer-tap-agent:ro
+      - ./.env:/opt/.env:ro
+      - ./horizon.json:/opt/horizon.json:ro
+      - ./subgraph-service.json:/opt/subgraph-service.json:ro
+      - ./tap-contracts.json:/opt/tap-contracts.json:ro
+    environment:
+      - HOT_RELOAD=${HOT_RELOAD:-false}
+      - CARGO_PROFILE=${CARGO_PROFILE:-debug}
+      - PROFILER=${PROFILER:-none}
+      - WORKSPACE_DIR=/workspace/indexer-rs
+      - RUST_LOG=${RUST_LOG:-debug}
+      - RUST_BACKTRACE=1
+    ports:
+      - "7300:7300"  # Metrics port
