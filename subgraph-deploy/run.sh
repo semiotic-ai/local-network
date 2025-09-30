@@ -47,6 +47,21 @@ echo "block_oracle_deployment=${block_oracle_deployment}"
 echo "tap_deployment=${tap_deployment}"
 
 # force index block oracle subgraph & network subgraph
+echo "Waiting for indexer-agent management API to be reachable..."
+for i in $(seq 1 120); do
+  if curl -sf "http://indexer-agent:${INDEXER_MANAGEMENT}/" >/dev/null 2>&1; then
+    echo "indexer-agent is reachable."
+    break
+  fi
+  echo "indexer-agent not reachable yet (attempt ${i}/120), waiting..."
+  sleep 2
+done
+
+if ! curl -sf "http://indexer-agent:${INDEXER_MANAGEMENT}/" >/dev/null 2>&1; then
+  echo "ERROR: indexer-agent not reachable at http://indexer-agent:${INDEXER_MANAGEMENT}/"
+  exit 1
+fi
+
 graph-indexer indexer connect "http://indexer-agent:${INDEXER_MANAGEMENT}"
 graph-indexer indexer --network=hardhat rules prepare "${network_subgraph_deployment}" -o json
 graph-indexer indexer --network=hardhat rules prepare "${block_oracle_deployment}" -o json
